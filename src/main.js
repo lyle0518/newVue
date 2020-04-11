@@ -13,9 +13,9 @@ Vue.use(Dialog);
 
 Vue.prototype.$axios = axios;
 // 配置基准路劲
-// axios.defaults.baseURL = "http://localhost:3000";
+axios.defaults.baseURL = "http://localhost:3000";
 // 线上的地址
-axios.defaults.baseURL = "http://hmtoutiao-api.atlansic.com";
+// axios.defaults.baseURL = "http://hmtoutiao-api.atlansic.com";
 
 Vue.config.productionTip = false;
 let app;

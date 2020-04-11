@@ -18,7 +18,7 @@
     <div class="content" v-html="post.content"></div>
 
     <div class="actions">
-      <div class="actions-item">
+      <div class="actions-item" :class="post.has_like?'active':''">
         <span class="iconfont icondianzan" @click="handleLike"></span>
         <i>{{Number(post.has_like)}}</i>
       </div>
@@ -206,6 +206,10 @@ export default {
     align-items: center;
     padding-bottom: 20/360 * 100vw;
     border-bottom: 3px solid #e4e4e4;
+    .active {
+      border: 1px solid #57c2ed !important;
+      color: skyblue !important;
+    }
     .actions-item {
       border: 1px solid #000;
       border-radius: 20px;
