@@ -35,7 +35,7 @@ export default {
   .video {
     position: relative;
     img {
-      width: 340/360 * 100vw;
+      width: 320/360 * 100vw;
       height: 170/360 * 100vw;
       padding-top: 15/360 * 100vw;
       object-fit: cover;

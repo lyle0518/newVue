@@ -40,7 +40,7 @@ axios.interceptors.response.use(
     // 对响应数据做点什么
     return response;
   },
-  (error) => {
+  error => {
     // 对响应错误做点什么
     console.log(error.response);
     const { statusCode, message } = error.response.data;
@@ -53,8 +53,8 @@ axios.interceptors.response.use(
         path: "/login",
         // path: "/login",
         query: {
-          return_url: app.$route.path,
-        },
+          return_url: app.$route.path
+        }
       });
     }
     return Promise.reject(error);
@@ -62,5 +62,5 @@ axios.interceptors.response.use(
 );
 app = new Vue({
   router,
-  render: (h) => h(App),
+  render: h => h(App)
 }).$mount("#app");

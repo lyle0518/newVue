@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Nav title="精彩跟帖"></Nav>
+    <Nav title="精彩跟帖" :back="true"></Nav>
     <van-list
       v-model="loading"
       :finished="finished"
@@ -63,7 +63,8 @@ export default {
       row: 1,
       // 处理输入框的弹起，true为弹起
       isFocus: false,
-      reply: {}
+      reply: {},
+      isload: false
     };
   },
   components: {
@@ -72,6 +73,7 @@ export default {
   },
   mounted() {
     const { id } = this.$route.params;
+    // this.post = [];
     this.id = id;
     this.getList();
   },
@@ -126,6 +128,8 @@ export default {
       });
     },
     getList() {
+      if (this.isload) return;
+      this.isload = true;
       this.$axios({
         url: `/post_comment/${this.id}`,
         params: {
@@ -137,6 +141,7 @@ export default {
         this.post = [...this.post, ...data];
         this.pageIndex += 1;
         this.loading = false;
+        this.isload = false;
         if (this.pageSize > data.length) {
           this.finished = true;
         }

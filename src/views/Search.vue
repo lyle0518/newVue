@@ -1,54 +1,42 @@
 <template>
   <div class="box">
+    <!-- 头部 -->
     <div class="nav">
       <span class="iconfont iconjiantou2" @click="$router.back()"></span>
-      <input
-        type="text"
-        placeholder="请输入搜索关键字"
-        autofocus
-        v-model="value"
-        @keyup.enter="handleSearch"
-      />
+      <input type="text" v-model="value" @keyup.enter="handleSearch" />
       <span class="searchBtn" @click="handleSearch">搜索</span>
       <span class="iconfont iconsearch"></span>
     </div>
     <div class="history">
-      <div class="his-text">
+      <div class="h-text">
         <p>历史记录</p>
         <span class="iconfont iconicon-test" @click="handleDel"></span>
       </div>
-      <div class="history-item">
-        <span v-for="(item, index) in history" :key="index" @click="handleRecord(item)">{{item}}</span>
+      <div class="h-item">
+        <span
+          class="h-item"
+          v-for="(item,index) in history"
+          :key="index"
+          @click="handleclick(item)"
+        >{{item}}</span>
       </div>
-
-      <!-- <span>美女111</span> -->
     </div>
-    <div class="hotSearch">
+    <div class="hot">
       <p>热门搜索</p>
-      <ul class="list">
-        <li>
-          <a href="#">办公室小野否认解散</a>
-          <a href="#">月季如何嫁接</a>
-        </li>
-        <li>
-          <a href="#">办公室小野否认解散</a>
-          <a href="#">月季如何嫁接</a>
-        </li>
-        <li>
-          <a href="#">办公室小野否认解散</a>
-          <a href="#">月季如何嫁接</a>
-        </li>
-      </ul>
+      <div class="item">
+        <span>办公室小野否认解散</span>
+        <span>月季如何嫁接</span>
+      </div>
     </div>
-    <div class="result-layer" v-if="showLayer">
-      <div v-for="(item,index) in list" :key="index">
-        <PostItem1 :data="item" v-if="item.type===1&&item.cover.length<3"></PostItem1>
-        <PostItem2 :data="item" v-if="item.type===1&&item.cover.length>=3"></PostItem2>
-        <PostItem3 :data="item" v-if="item.type===2"></PostItem3>
+    <div class="cover" v-if="cover">
+      <div class="c-item" v-for="(item,index) in list" :key="index">
+        <PostItem1 v-if="item.type===1&&item.cover.length<3" :data="item"></PostItem1>
+        <PostItem2 v-if="item.type===1&&item.cover.length>3" :data="item"></PostItem2>
+        <PostItem3 v-if="item.type===2" :data="item"></PostItem3>
       </div>
-      <div class="empty" v-if="list.length===0">
-        <p>没有找到你想要的内容</p>
-      </div>
+    </div>
+    <div class="noneCover" v-if="nonecover">
+      <p>抱歉,查询不到对应文章</p>
     </div>
   </div>
 </template>
@@ -65,52 +53,56 @@ export default {
     PostItem2,
     PostItem3
   },
-  watch: {
-    value() {
-      if (this.value == "") {
-        this.showLayer = false;
-        this.list = [];
-      }
-    }
-  },
-  data() {
-    return {
-      value: "",
-      history: JSON.parse(localStorage.getItem("history")) || [],
-      showLayer: false,
-      list: []
-    };
-  },
+  //   路由拦截从首页进入,清空list和value的值
   beforeRouteEnter(to, from, next) {
     next(vm => {
       // 通过 `vm` 访问组件实例
       if (from.path === "/") {
-        vm.showLayer = false;
+        vm.list = [];
+        vm.cover = false;
+        vm.nonecover = false;
         vm.value = "";
       }
     });
   },
+  data() {
+    return {
+      cover: false,
+      value: "",
+      list: [],
+      nonecover: false,
+      history: JSON.parse(localStorage.getItem("history")) || []
+    };
+  },
+  watch: {
+    value() {
+      // 清空输入框隐藏遮罩层
+      if (this.value.trim() === "") {
+        this.cover = false;
+        this.nonecover = false;
+        this.list = [];
+      }
+    }
+  },
   methods: {
-    handleSearch() {
-      // console.log(this.value);
-      // 输入框为空阻止搜索请求
-      if (this.value == "") return;
-      this.history.unshift(this.value);
-      this.history = [...new Set(this.history)];
-      localStorage.setItem("history", JSON.stringify(this.history));
-      this.getList();
-      // 清空输入框
-      // this.value = "";
-    },
     handleDel() {
       this.history = [];
       localStorage.removeItem("history");
     },
-    handleRecord(item) {
+    handleclick(item) {
       this.value = item;
-      // 触发搜索请求
+      this.handleSearch();
     },
-    // 封装一个搜索请求
+    //   搜索
+    handleSearch() {
+      if (this.value.trim() === "") {
+        return;
+      }
+      this.history.unshift(this.value);
+      this.history = [...new Set(this.history)];
+      localStorage.setItem("history", JSON.stringify(this.history));
+      this.getList();
+    },
     getList() {
       this.$axios({
         url: "/post_search",
@@ -118,113 +110,114 @@ export default {
           keyword: this.value
         }
       }).then(res => {
-        this.showLayer = true;
         const { data } = res.data;
-        // console.log(data);
+        // 搜索成功;
+        if (data.length === 0) {
+          this.nonecover = true;
+          return;
+        }
+        console.log(data);
+        this.cover = true;
         this.list = data;
+
+        console.log(data);
       });
     }
   }
 };
 </script>
 
-<style lang='less' scoped>
+<style scoped lang='less'>
 .box {
-  padding: 10px;
-  box-sizing: border-box;
-  // position: relative;
-  .nav {
-    position: relative;
+  padding: 10/360 * 100vw;
+}
+.nav {
+  display: flex;
+  position: relative;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+
+  input {
+    width: 250/360 * 100vw;
+    height: 38/360 * 100vw;
+    border-radius: 50px;
+    border: 1px solid #dddddd;
+    padding-left: 40px;
+    box-sizing: border-box;
+  }
+  .searchBtn {
+    font-size: 14px;
+    margin-right: 5/360 * 100vw;
+  }
+  .iconsearch {
+    position: absolute;
+    left: 55px;
+    top: 13px;
+  }
+}
+.history {
+  font-size: 14px;
+  padding: 10/360 * 100vw 20/360 * 100vw;
+  border-bottom: 1px solid #dddddd;
+  margin-bottom: 20/360 * 100vw;
+  .h-text {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    margin-bottom: 20/360 * 100vw;
-    .iconsearch {
-      position: absolute;
-      left: 35px;
-    }
 
-    input {
-      flex: 1;
-      height: 30/360 * 100vw;
-      border: 1px solid #d7d7d7;
-      border-radius: 20px;
-      margin: 0 5px;
-      padding-left: 36px;
-    }
-    .searchBtn {
-      margin: 0 5px;
-    }
-  }
-  .history {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    .his-text {
-      display: flex;
-      justify-content: space-between;
-      p {
-        font-size: 14px;
-        font-weight: 700;
-        margin-bottom: 10px;
-      }
-      .iconicon-test {
-        font-size: 14px;
-      }
-    }
-    .history-item {
-      span {
-        font-size: 12px;
-        margin-right: 30px;
-      }
-    }
-  }
-  .hotSearch {
     p {
-      font-size: 14px;
       font-weight: 700;
-      margin-top: 20/360 * 100vw;
-    }
-    .list {
-      li {
-        margin-top: 8/360 * 100vw;
-        a {
-          font-size: 12px;
-          margin-right: 50/360 * 100vw;
-        }
-      }
+      margin-bottom: 10px;
     }
   }
-  .result-layer {
-    position: absolute;
-    top: 58/360 * 100vw;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    overflow-y: auto;
-    height: 100%;
-    padding: 20/360 * 100vw 0;
-    background-color: #fff;
-    box-sizing: border-box;
-    .result-item {
-      padding: 10/360 * 100vw;
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px solid #eee;
 
-      p {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
+  .h-item {
+    display: flex;
+    flex-wrap: wrap;
+    span {
+      padding: 0 10/360 * 100vw;
+      border: 1px solid #ddd;
+      margin: 10px 20px 0 0;
     }
   }
-  .empty {
-    text-align: center;
-    font-size: 16px;
-    color: #999;
-    line-height: 2;
+}
+.hot {
+  p {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10/360 * 100vw;
+  }
+  .item {
+    display: flex;
+    justify-content: space-around;
+    font-size: 14px;
+  }
+}
+.cover {
+  position: absolute;
+  top: 57px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+
+  .c-item {
+    padding: 0 10/360 * 100vw;
+    // border-bottom: 1px solid #dddddd;
+  }
+}
+.noneCover {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  padding: 50px 0;
+  top: 57px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  p {
+    color: #a69b9b;
   }
 }
 </style>
