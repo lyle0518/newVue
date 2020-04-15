@@ -147,6 +147,7 @@ export default {
 <style scoped lang='less'>
 .box {
   // padding: 10/360 * 100vw;
+  height: 100vh;
   .nav {
     display: flex;
     justify-content: space-between;
@@ -225,7 +226,7 @@ export default {
     }
   }
   .footer {
-    position: relative;
+    position: absolute;
     left: 0;
     right: 0;
     bottom: 0;

@@ -146,6 +146,9 @@ export default {
 </script>
 
 <style lang='less' scoped>
+.box {
+  position: relative;
+}
 video {
   width: 100%;
 }
